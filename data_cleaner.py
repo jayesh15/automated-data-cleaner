@@ -54,6 +54,16 @@ for col in data.select_dtypes(include=np.number).columns:
             with open('cleaning_summary.txt', 'a') as f:
                 f.write(f"No outliers and no missing data in column {col}.\n")
 
+# handling duplicated data
+duplicated_rows = data.duplicated()
+if duplicated_rows.any():
+    data = data[~duplicated_rows]
+    with open('cleaning_summary.txt', 'a') as f:
+        f.write("Duplicate rows removed.\n")
+else:
+    with open('cleaning_summary.txt', 'a') as f:
+        f.write("No duplicated rows found.\n")
+
 # save the cleaned data as a CSV file
 output_file = "output_file.csv"
 data.to_csv(output_file, index=False)
