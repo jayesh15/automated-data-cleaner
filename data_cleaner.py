@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import skew
 
 # load the CSV file
-input_file = "/kaggle/input/datacleaner/input.csv"
+input_file = "/input/sample.csv"
 chunk_size = 1000000  # adjust this based on available memory
 reader = pd.read_csv(input_file, chunksize=chunk_size)
 data = pd.concat([chunk for chunk in reader])
@@ -21,6 +21,10 @@ for i, col in enumerate(data.columns):
             data[col].fillna(data[col].mode()[0], inplace=True)  # if categorical, fill with mode
             with open('cleaning_summary.txt', 'a') as f:
                 f.write(f"Missing data filled with mode for column {col}.\n")
+        elif pd.to_numeric(data[col], errors='coerce').isna().any():
+            data[col].fillna(data[col].median(), inplace=True)  # if not numeric, fill with median
+            with open('cleaning_summary.txt', 'a') as f:
+                f.write(f"Missing data filled with median for non-numeric column {col}.\n")
         elif skewness[i] < -1:
             data[col].fillna(data[col].median(), inplace=True)  # if highly left-skewed, fill with median
             with open('cleaning_summary.txt', 'a') as f:
@@ -36,7 +40,6 @@ for i, col in enumerate(data.columns):
     else:
         with open('cleaning_summary.txt', 'a') as f:
             f.write(f"No missing data in column {col}.\n")
-
 
 # handling outliers
 for col in data.select_dtypes(include=np.number).columns:
@@ -67,4 +70,3 @@ else:
 # save the cleaned data as a CSV file
 output_file = "output_file.csv"
 data.to_csv(output_file, index=False)
-
